@@ -14,7 +14,7 @@ const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:5174",
   process.env.FRONTEND_URL,
-  "https://ecommerce-frontend-55qpwh4qh-anirudha-b-shettys-projects.vercel.app",
+  "https://ecommerce-starlfinx.vercel.app",
 ].filter(Boolean);
 
 // CORS middleware - must be before routes
