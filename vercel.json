@@ -1,8 +1,5 @@
 {
   "version": 2,
-  "buildCommand": "cd Frontend && npm install && npm run build",
-  "outputDirectory": "Frontend/dist",
-  "installCommand": "npm install --prefix Frontend && npm install --prefix Backend",
   "builds": [
     {
       "src": "Backend/server.js",
@@ -15,11 +12,8 @@
       "dest": "Backend/server.js"
     },
     {
-      "handle": "filesystem"
-    },
-    {
       "src": "/(.*)",
-      "dest": "/index.html"
+      "dest": "Backend/server.js"
     }
   ]
 }

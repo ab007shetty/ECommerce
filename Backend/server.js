@@ -13,7 +13,7 @@ const app = express();
 const allowedOrigins = [
   "http://localhost:3000", // Local development
   "http://localhost:5173", // Vite default
-  "https://ecommerce-starlfinx.vercel.app",
+  "https://ecommerce-xi-sand-54.vercel.app", // Update this to your actual Vercel URL
 ];
 
 app.use(
@@ -58,6 +58,26 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "OK", message: "Backend is running!" });
 });
 
+// === Serve Frontend Static Files (Production Only) ===
+if (process.env.NODE_ENV === "production") {
+  // Serve static files from Frontend/dist
+  app.use(express.static(path.join(__dirname, "../Frontend/dist")));
+
+  // Handle React routing - return index.html for all non-API routes
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "../Frontend/dist", "index.html"));
+  });
+}
+
+// === Global Error Handler ===
+app.use((err, req, res, next) => {
+  console.error("Error:", err.stack);
+  res.status(err.status || 500).json({
+    success: false,
+    message: err.message || "Server Error",
+  });
+});
+
 // === Catch-all for Vercel Serverless Functions ===
 if (process.env.NODE_ENV === "production") {
   // Important: Export for Vercel
@@ -72,12 +92,3 @@ if (process.env.NODE_ENV === "production") {
     console.log(`Local: http://localhost:${PORT}`);
   });
 }
-
-// === Global Error Handler ===
-app.use((err, req, res, next) => {
-  console.error("Error:", err.stack);
-  res.status(err.status || 500).json({
-    success: false,
-    message: err.message || "Server Error",
-  });
-});
