@@ -8,11 +8,17 @@
     {
       "src": "Backend/server.js",
       "use": "@vercel/node"
+    },
+    {
+      "src": "Frontend/dist/**",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
-    { "src": "/api/(.*)", "dest": "Backend/server.js" },
-    { "src": "/(.*)", "dest": "Frontend/dist/index.html" }
-  ],
-  "outputDirectory": "Frontend/dist"
+    { "src": "/api/(.*)", "dest": "/Backend/server.js" },
+    { "src": "/assets/(.*)", "dest": "/Frontend/dist/assets/$1" },
+    { "src": "/(.*\\.js)", "dest": "/Frontend/dist/$1" },
+    { "src": "/(.*\\.css)", "dest": "/Frontend/dist/$1" },
+    { "src": "/(.*)", "dest": "/Frontend/dist/index.html" }
+  ]
 }
