@@ -1,5 +1,6 @@
+// src/context/AuthContext.jsx
 import { createContext, useContext, useState, useEffect } from 'react';
-import axios from 'axios';
+import API from '../services/api'; // ✅ Use your API instance
 import toast from 'react-hot-toast';
 
 const AuthContext = createContext();
@@ -8,23 +9,10 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Base API URL
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-
-  // Set default Authorization header when user logs in
-  const setAuthToken = (token) => {
-    if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    } else {
-      delete axios.defaults.headers.common['Authorization'];
-    }
-  };
-
   // Check if token exists in localStorage on app load
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      setAuthToken(token);
       fetchUserProfile();
     } else {
       setLoading(false);
@@ -33,7 +21,7 @@ export const AuthProvider = ({ children }) => {
 
   const fetchUserProfile = async () => {
     try {
-      const { data } = await axios.get(`${API_URL}/auth/profile`);
+      const { data } = await API.get('/auth/profile');
       setUser(data); // assuming backend returns user object
     } catch (err) {
       console.error('Failed to fetch user:', err);
@@ -45,14 +33,15 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (credentials) => {
     try {
-      const { data } = await axios.post(`${API_URL}/auth/login`, credentials);
+      const { data } = await API.post('/auth/login', credentials);
       const token = data.token;
 
       localStorage.setItem('token', token);
-      setAuthToken(token);
+      localStorage.setItem('user', JSON.stringify(data.user));
 
       await fetchUserProfile();
       toast.success('Logged in successfully!');
+      return data;
     } catch (err) {
       const message = err.response?.data?.message || 'Login failed';
       toast.error(message);
@@ -62,14 +51,15 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (userData) => {
     try {
-      const { data } = await axios.post(`${API_URL}/auth/register`, userData);
+      const { data } = await API.post('/auth/register', userData);
       const token = data.token;
 
       localStorage.setItem('token', token);
-      setAuthToken(token);
+      localStorage.setItem('user', JSON.stringify(data.user));
 
       await fetchUserProfile();
       toast.success('Account created successfully!');
+      return data;
     } catch (err) {
       const message = err.response?.data?.message || 'Registration failed';
       toast.error(message);
@@ -79,7 +69,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem('token');
-    setAuthToken(null);
+    localStorage.removeItem('user');
     setUser(null);
     toast.success('Logged out');
   };

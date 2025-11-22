@@ -191,9 +191,9 @@ const Navbar = () => {
               className="flex items-center space-x-3"
             >
               <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white w-10 h-10 rounded-xl flex items-center justify-center font-bold text-xl shadow-lg">
-                E
+                <ShoppingBag className="w-6 h-6" />
               </div>
-              <span className="text-2xl font-bold text-indigo-600">Ecommerce</span>
+              <span className="text-2xl font-bold text-indigo-600">E Commerce</span>
             </Link>
             <button
               onClick={() => setMobileMenuOpen(false)}

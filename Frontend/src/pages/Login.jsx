@@ -1,5 +1,5 @@
 // src/pages/Login.jsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Mail, Lock, Eye, EyeOff, ShoppingBag } from 'lucide-react';
@@ -11,8 +11,20 @@ const Login = () => {
   });
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const { login } = useAuth();
+
+  const { login, user } = useAuth(); // Get user from context
   const navigate = useNavigate();
+
+  // Auto-redirect when user is logged in
+  useEffect(() => {
+    if (user) {
+      if (user.role === 'admin') {
+        navigate('/admin', { replace: true });
+      } else {
+        navigate('/', { replace: true });
+      }
+    }
+  }, [user, navigate]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -23,16 +35,11 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const response = await login(formData);
-      // Check if user is admin and redirect accordingly
-      const loggedInUser = response?.user || JSON.parse(localStorage.getItem('user'));
-      if (loggedInUser && loggedInUser.role === 'admin') {
-        navigate('/admin');
-      } else {
-        navigate('/');
-      }
+      await login(formData); // This does everything: API call, save token/user, toast
+      // No need to navigate here — useEffect will handle it safely
     } catch (error) {
-      console.error(error);
+      // Error already shown via toast in AuthContext
+      console.error('Login failed:', error);
     } finally {
       setLoading(false);
     }

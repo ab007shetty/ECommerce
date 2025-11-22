@@ -1,8 +1,12 @@
 // Frontend/src/services/api.js
 import axios from "axios";
 
-// Get API URL from environment variable or default to localhost
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+// Get API URL from environment variable - remove any trailing slashes
+const API_BASE_URL = (
+  import.meta.env.VITE_API_URL || "http://localhost:5000"
+).replace(/\/+$/, "");
+
+console.log("🔗 API Base URL:", API_BASE_URL); // Debug log
 
 // Create axios instance with dynamic base URL
 const API = axios.create({
@@ -11,9 +15,10 @@ const API = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+  timeout: 30000, // 30 second timeout
 });
 
-// Automatically attach JWT token from localStorage
+// Request interceptor - attach JWT token
 API.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
