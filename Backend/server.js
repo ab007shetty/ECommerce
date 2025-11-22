@@ -3,7 +3,6 @@ const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const connectDB = require("./config/db");
-const path = require("path");
 
 dotenv.config();
 
@@ -11,15 +10,14 @@ const app = express();
 
 // === CORS Configuration (Critical for Vercel + Frontend) ===
 const allowedOrigins = [
-  "http://localhost:3000", // Local development
-  "http://localhost:5173", // Vite default
-  "https://ecommerce-xi-sand-54.vercel.app", // Update this to your actual Vercel URL
+  "http://localhost:3000",
+  "http://localhost:5173",
+  "https://ecommerce-xi-sand-54.vercel.app",
 ];
 
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps or curl)
       if (!origin) return callback(null, true);
 
       if (allowedOrigins.includes(origin)) {
@@ -29,11 +27,10 @@ app.use(
         callback(new Error("Not allowed by CORS"));
       }
     },
-    credentials: true, // If you're using cookies/auth later
+    credentials: true,
   })
 );
 
-// Optional: Extra safety header
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
   next();
@@ -58,17 +55,6 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "OK", message: "Backend is running!" });
 });
 
-// === Serve Frontend Static Files (Production Only) ===
-if (process.env.NODE_ENV === "production") {
-  // Serve static files from Frontend/dist
-  app.use(express.static(path.join(__dirname, "../Frontend/dist")));
-
-  // Handle React routing - return index.html for all non-API routes
-  app.get("*", (req, res) => {
-    res.sendFile(path.join(__dirname, "../Frontend/dist", "index.html"));
-  });
-}
-
 // === Global Error Handler ===
 app.use((err, req, res, next) => {
   console.error("Error:", err.stack);
@@ -78,12 +64,10 @@ app.use((err, req, res, next) => {
   });
 });
 
-// === Catch-all for Vercel Serverless Functions ===
+// === Export for Vercel or Start Server ===
 if (process.env.NODE_ENV === "production") {
-  // Important: Export for Vercel
   module.exports = app;
 } else {
-  // Local development
   const PORT = process.env.PORT || 5000;
   app.listen(PORT, () => {
     console.log(
