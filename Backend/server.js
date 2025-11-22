@@ -8,29 +8,10 @@ dotenv.config();
 
 const app = express();
 
-// === CORS Configuration ===
-const allowedOrigins = [
-  "http://localhost:3000",
-  "http://localhost:5173",
-  "http://localhost:5174",
-  process.env.FRONTEND_URL,
-  "https://ecommerce-starlfinx.vercel.app",
-].filter(Boolean);
-
-// CORS middleware - must be before routes
+// === CORS Configuration - Allow All ===
 app.use(
   cors({
-    origin: (origin, callback) => {
-      // Allow requests with no origin (mobile apps, Postman, curl)
-      if (!origin) return callback(null, true);
-
-      if (allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        console.log("⚠️ Blocked by CORS:", origin);
-        callback(null, true); // Allow anyway for debugging - change to false in production
-      }
-    },
+    origin: true, // Allow all origins
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
