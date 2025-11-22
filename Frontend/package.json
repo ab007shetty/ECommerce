@@ -2,11 +2,12 @@
   "name": "frontend",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://ab007shetty.github.io/ECommerce",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "vercel-build": "vite build"
+    "test": "vitest"
   },
   "dependencies": {
     "@babel/standalone": "^7.27.6",

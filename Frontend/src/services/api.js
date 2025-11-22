@@ -1,20 +1,45 @@
-// src/services/api.js
+// Frontend/src/services/api.js
 import axios from "axios";
 
-// This is the ONLY line you need now
+// Get API URL from environment variable or default to localhost
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
+// Create axios instance with dynamic base URL
 const API = axios.create({
-  baseURL: "/api", // Works everywhere: local dev (via proxy) + Vercel production
-  withCredentials: true, // Optional: if you plan to use httpOnly cookies later
+  baseURL: `${API_BASE_URL}/api`,
+  withCredentials: true,
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
 // Automatically attach JWT token from localStorage
-API.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+API.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
   }
-  return config;
-});
+);
+
+// Response interceptor for error handling
+API.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Token expired or invalid
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      window.location.href = "/login";
+    }
+    return Promise.reject(error);
+  }
+);
 
 // Product API
 export const productAPI = {
