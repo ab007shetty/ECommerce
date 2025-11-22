@@ -20,5 +20,6 @@
     { "src": "/(.*\\.js)", "dest": "/Frontend/dist/$1" },
     { "src": "/(.*\\.css)", "dest": "/Frontend/dist/$1" },
     { "src": "/(.*)", "dest": "/Frontend/dist/index.html" }
-  ]
+  ],
+  "outputDirectory": "Frontend/dist"
 }
