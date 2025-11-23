@@ -1,7 +1,7 @@
 // Backend/controllers/cartController.js
-const Cart = require("../models/Cart");
+import Cart from "../models/Cart.js";
 
-exports.getCart = async (req, res) => {
+export const getCart = async (req, res) => {
   try {
     let cart = await Cart.findOne({ user: req.user.id }).populate(
       "items.product"
@@ -16,7 +16,7 @@ exports.getCart = async (req, res) => {
   }
 };
 
-exports.addToCart = async (req, res) => {
+export const addToCart = async (req, res) => {
   const { productId, quantity } = req.body;
   try {
     let cart = await Cart.findOne({ user: req.user.id });
@@ -38,7 +38,7 @@ exports.addToCart = async (req, res) => {
   }
 };
 
-exports.updateCartItem = async (req, res) => {
+export const updateCartItem = async (req, res) => {
   const { productId, quantity } = req.body;
   try {
     const cart = await Cart.findOne({ user: req.user.id });
@@ -60,7 +60,7 @@ exports.updateCartItem = async (req, res) => {
   }
 };
 
-exports.removeFromCart = async (req, res) => {
+export const removeFromCart = async (req, res) => {
   const { productId } = req.params;
   try {
     const cart = await Cart.findOne({ user: req.user.id });

@@ -1,14 +1,14 @@
 // Backend/routes/products.js
-const express = require("express");
+import express from "express";
 const router = express.Router();
-const {
+import {
   createProduct,
   getProducts,
   getProductById,
   updateProduct,
   deleteProduct,
-} = require("../controllers/productController");
-const { protect, admin } = require("../middleware/auth");
+} from "../controllers/productController.js";
+import { protect, admin } from "../middleware/auth.js";
 
 router.post("/", protect, admin, createProduct);
 router.get("/", getProducts);
@@ -16,4 +16,4 @@ router.get("/:id", getProductById);
 router.put("/:id", protect, admin, updateProduct);
 router.delete("/:id", protect, admin, deleteProduct);
 
-module.exports = router;
+export default router;

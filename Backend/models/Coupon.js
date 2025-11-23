@@ -1,5 +1,5 @@
 // Backend/models/Coupon.js
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const couponSchema = new mongoose.Schema({
   code: { type: String, required: true, unique: true },
@@ -15,4 +15,4 @@ const couponSchema = new mongoose.Schema({
   isActive: { type: Boolean, default: true },
 });
 
-module.exports = mongoose.model("Coupon", couponSchema);
+export default mongoose.model("Coupon", couponSchema);

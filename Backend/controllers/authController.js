@@ -1,9 +1,9 @@
 // Backend/controllers/authController.js
-const User = require("../models/User");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
+import User from "../models/User.js";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
-exports.register = async (req, res) => {
+export const register = async (req, res) => {
   const { name, email, password, role } = req.body;
   try {
     let user = await User.findOne({ email });
@@ -25,7 +25,7 @@ exports.register = async (req, res) => {
   }
 };
 
-exports.login = async (req, res) => {
+export const login = async (req, res) => {
   const { email, password } = req.body;
   try {
     const user = await User.findOne({ email });
@@ -46,7 +46,7 @@ exports.login = async (req, res) => {
   }
 };
 
-exports.getProfile = async (req, res) => {
+export const getProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select("-password");
     res.json(user);
@@ -55,7 +55,7 @@ exports.getProfile = async (req, res) => {
   }
 };
 
-exports.updateProfile = async (req, res) => {
+export const updateProfile = async (req, res) => {
   try {
     const user = await User.findByIdAndUpdate(req.user.id, req.body, {
       new: true,

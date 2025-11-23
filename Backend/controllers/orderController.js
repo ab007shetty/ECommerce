@@ -1,7 +1,7 @@
 // Backend/controllers/orderController.js
-const Order = require("../models/Order");
+import Order from "../models/Order.js";
 
-exports.createOrder = async (req, res) => {
+export const createOrder = async (req, res) => {
   try {
     const order = new Order({ ...req.body, user: req.user.id });
     await order.save();
@@ -11,7 +11,7 @@ exports.createOrder = async (req, res) => {
   }
 };
 
-exports.getOrders = async (req, res) => {
+export const getOrders = async (req, res) => {
   try {
     const orders = await Order.find().populate("user", "name email");
     res.json({ success: true, data: orders });
@@ -20,7 +20,7 @@ exports.getOrders = async (req, res) => {
   }
 };
 
-exports.getUserOrders = async (req, res) => {
+export const getUserOrders = async (req, res) => {
   try {
     const orders = await Order.find({ user: req.user.id });
     res.json({ success: true, data: orders });
@@ -29,7 +29,7 @@ exports.getUserOrders = async (req, res) => {
   }
 };
 
-exports.updateOrderStatus = async (req, res) => {
+export const updateOrderStatus = async (req, res) => {
   try {
     const order = await Order.findByIdAndUpdate(
       req.params.id,

@@ -1,7 +1,7 @@
 // Backend/middleware/auth.js
-const jwt = require("jsonwebtoken");
+import jwt from "jsonwebtoken";
 
-exports.protect = (req, res, next) => {
+export const protect = (req, res, next) => {
   let token = req.headers.authorization?.split(" ")[1];
   if (!token) return res.status(401).json({ message: "No token provided" });
 
@@ -14,7 +14,7 @@ exports.protect = (req, res, next) => {
   }
 };
 
-exports.admin = (req, res, next) => {
+export const admin = (req, res, next) => {
   if (req.user.role !== "admin")
     return res.status(403).json({ message: "Admin access required" });
   next();

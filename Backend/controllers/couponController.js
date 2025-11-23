@@ -1,7 +1,7 @@
 // Backend/controllers/couponController.js
-const Coupon = require("../models/Coupon");
+import Coupon from "../models/Coupon.js";
 
-exports.createCoupon = async (req, res) => {
+export const createCoupon = async (req, res) => {
   try {
     const coupon = new Coupon(req.body);
     await coupon.save();
@@ -11,7 +11,7 @@ exports.createCoupon = async (req, res) => {
   }
 };
 
-exports.getCoupons = async (req, res) => {
+export const getCoupons = async (req, res) => {
   try {
     const coupons = await Coupon.find();
     res.json({ success: true, data: coupons });
@@ -20,7 +20,7 @@ exports.getCoupons = async (req, res) => {
   }
 };
 
-exports.updateCoupon = async (req, res) => {
+export const updateCoupon = async (req, res) => {
   try {
     const coupon = await Coupon.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
@@ -35,7 +35,7 @@ exports.updateCoupon = async (req, res) => {
   }
 };
 
-exports.deleteCoupon = async (req, res) => {
+export const deleteCoupon = async (req, res) => {
   try {
     const coupon = await Coupon.findByIdAndDelete(req.params.id);
     if (!coupon)
@@ -48,7 +48,7 @@ exports.deleteCoupon = async (req, res) => {
   }
 };
 
-exports.validateCoupon = async (req, res) => {
+export const validateCoupon = async (req, res) => {
   const { code, cartTotal } = req.body;
   try {
     const coupon = await Coupon.findOne({ code });
