@@ -5,34 +5,16 @@ import { productAPI } from '../services/api';
 import { useCart } from '../context/CartContext';
 import { 
   ShoppingCart, 
-  Search, 
   Package, 
   TrendingUp, 
   Smartphone,
   BookOpen,
   Shirt,
   Grid3x3,
-  X,
   CheckCircle2,
   XCircle,
-  ChevronDown
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-
-// Debounce hook
-const useDebounce = (value, delay) => {
-  const [debouncedValue, setDebouncedValue] = useState(value);
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value);
-    }, delay);
-
-    return () => clearTimeout(handler);
-  }, [value, delay]);
-
-  return debouncedValue;
-};
 
 // Category icon mapping with default fallback
 const getCategoryIcon = (category) => {
@@ -51,30 +33,14 @@ const getCategoryIcon = (category) => {
 const Home = () => {
   const [allProducts, setAllProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
-  const [categories, setCategories] = useState(['All']);
   const [loading, setLoading] = useState(true);
-  const [category, setCategory] = useState('All');
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [searchInput, setSearchInput] = useState(searchParams.get('search') || '');
-
+  const [searchParams] = useSearchParams();
   const { addToCart } = useCart();
 
-  // Debounce search input (300ms)
-  const debouncedSearch = useDebounce(searchInput, 300);
-
-  // Update URL when debounced search changes
-  useEffect(() => {
-    if (debouncedSearch) {
-      setSearchParams({ search: debouncedSearch });
-    } else {
-      setSearchParams({});
-    }
-  }, [debouncedSearch, setSearchParams]);
-
-  // Extract search query from URL
+  // Extract search query and category from URL
   const searchQuery = searchParams.get('search') || '';
+  const category = searchParams.get('category') || 'All';
 
   // Fetch products once
   useEffect(() => {
@@ -83,21 +49,12 @@ const Home = () => {
         setLoading(true);
         const { data } = await productAPI.getAll();
         const products = data.data || [];
-
         setAllProducts(products);
-
-        // Extract unique categories
-        const uniqueCategories = [
-          'All',
-          ...new Set(products.map(p => p.category).filter(Boolean))
-        ];
-        setCategories(uniqueCategories);
-
+        
         // Initial render
-        applyFilters(products, 'All', '');
+        applyFilters(products, category, searchQuery);
       } catch (error) {
         toast.error('Failed to load products');
-        setCategories(['All']);
       } finally {
         setLoading(false);
       }
@@ -110,7 +67,7 @@ const Home = () => {
   const applyFilters = useCallback((products, selectedCategory, query) => {
     let filtered = [...products];
 
-    if (selectedCategory !== 'All') {
+    if (selectedCategory && selectedCategory !== 'All') {
       filtered = filtered.filter(p => p.category === selectedCategory);
     }
 
@@ -132,150 +89,8 @@ const Home = () => {
     addToCart(product);
   };
 
-  const clearSearch = () => {
-    setSearchInput('');
-    setSearchParams({});
-  };
-
-  const handleCategorySelect = (cat) => {
-    setCategory(cat);
-    setIsDropdownOpen(false);
-  };
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (isDropdownOpen && !e.target.closest('.category-dropdown')) {
-        setIsDropdownOpen(false);
-      }
-    };
-
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
-  }, [isDropdownOpen]);
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* Sticky Header Section with Search & Category Dropdown */}
-      <div className="bg-white border-b border-gray-200 sticky top-16 z-40 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          {/* Desktop Layout - Search Bar with Dropdown Side by Side */}
-          <div className="hidden md:flex items-center gap-4">
-            {/* Search Bar */}
-            <div className="flex-1 relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type="text"
-                placeholder="Search products..."
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                className="w-full pl-12 pr-12 py-3.5 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white text-gray-800 placeholder-gray-400 transition-all"
-              />
-              {searchInput && (
-                <button
-                  onClick={clearSearch}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition p-1 hover:bg-gray-100 rounded-full"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              )}
-            </div>
-
-            {/* Category Dropdown */}
-            <div className="relative category-dropdown">
-              <button
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="flex items-center gap-3 px-6 py-3.5 bg-white border-2 border-gray-200 rounded-xl hover:border-gray-300 transition-all min-w-[200px] justify-between"
-              >
-                <div className="flex items-center gap-2">
-                  {getCategoryIcon(category)}
-                  <span className="font-medium text-gray-700">{category}</span>
-                </div>
-                <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
-              </button>
-
-              {/* Dropdown Menu */}
-              {isDropdownOpen && (
-                <div className="absolute top-full mt-2 w-full bg-white border-2 border-gray-200 rounded-xl shadow-xl overflow-hidden z-50">
-                  {loading ? (
-                    <div className="px-4 py-3 text-sm text-gray-400">Loading...</div>
-                  ) : (
-                    categories.map((cat) => (
-                      <button
-                        key={cat}
-                        onClick={() => handleCategorySelect(cat)}
-                        className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors ${
-                          category === cat ? 'bg-blue-50 text-blue-600 font-medium' : 'text-gray-700'
-                        }`}
-                      >
-                        {getCategoryIcon(cat)}
-                        <span>{cat}</span>
-                      </button>
-                    ))
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Mobile Layout - Side by Side */}
-          <div className="md:hidden flex items-center gap-2">
-            {/* Search Bar */}
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <input
-                type="text"
-                placeholder="Search..."
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                className="w-full pl-10 pr-10 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white text-gray-800 placeholder-gray-400 transition-all text-sm"
-              />
-              {searchInput && (
-                <button
-                  onClick={clearSearch}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition p-1 hover:bg-gray-100 rounded-full"
-                >
-                  <X className="w-3 h-3" />
-                </button>
-              )}
-            </div>
-
-            {/* Category Dropdown */}
-            <div className="relative category-dropdown">
-              <button
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="flex items-center gap-2 px-3 py-3 bg-white border-2 border-gray-200 rounded-xl hover:border-gray-300 transition-all"
-              >
-                {getCategoryIcon(category)}
-                <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
-              </button>
-
-              {/* Dropdown Menu */}
-              {isDropdownOpen && (
-                <div className="absolute top-full right-0 mt-2 w-48 bg-white border-2 border-gray-200 rounded-xl shadow-xl overflow-hidden z-50">
-                  {loading ? (
-                    <div className="px-4 py-3 text-sm text-gray-400">Loading...</div>
-                  ) : (
-                    categories.map((cat) => (
-                      <button
-                        key={cat}
-                        onClick={() => handleCategorySelect(cat)}
-                        className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left ${
-                          category === cat ? 'bg-blue-50 text-blue-600 font-medium' : 'text-gray-700'
-                        }`}
-                      >
-                        {getCategoryIcon(cat)}
-                        <span>{cat}</span>
-                      </button>
-                    ))
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Products Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         {/* Section Header */}
@@ -315,12 +130,12 @@ const Home = () => {
               {searchQuery ? 'Try searching with different keywords' : 'Check back later for new arrivals'}
             </p>
             {searchQuery && (
-              <button
-                onClick={clearSearch}
-                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
+              <Link
+                to="/"
+                className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
               >
                 Clear Search
-              </button>
+              </Link>
             )}
           </div>
         ) : (

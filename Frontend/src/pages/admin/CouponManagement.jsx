@@ -231,8 +231,7 @@ const CouponManagement = () => {
                 <ArrowLeft className="w-8 h-8" />
               </Link>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">Coupon Management</h1>
-                <p className="text-sm text-gray-500">Create and manage discount coupons</p>
+                <h1 className="text-3xl font-bold text-gray-900">Coupons</h1>
               </div>
             </div>
             <button
@@ -240,7 +239,7 @@ const CouponManagement = () => {
               className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 font-medium shadow-lg transition"
             >
               <Plus className="w-5 h-5" />
-              Add Coupon
+              Add
             </button>
           </div>
         </div>

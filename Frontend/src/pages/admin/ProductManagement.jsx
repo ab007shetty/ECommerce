@@ -199,14 +199,14 @@ const ProductManagement = () => {
             <Link to="/admin" className="text-gray-600 hover:text-gray-800">
               <ArrowLeft className="w-6 h-6" />
             </Link>
-            <h1 className="text-3xl font-bold text-gray-800">Product Management</h1>
+            <h1 className="text-3xl font-bold text-gray-800">Products</h1>
           </div>
           <button
             onClick={() => openModal()}
             className="flex items-center gap-2 px-5 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium shadow-md"
           >
             <Plus className="w-5 h-5" />
-            Add Product
+            Add
           </button>
         </div>
       </div>
