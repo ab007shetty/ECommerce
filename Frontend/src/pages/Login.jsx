@@ -153,13 +153,6 @@ const Login = () => {
             </Link>
           </div>
         </div>
-
-        {/* Footer */}
-        <p className="mt-8 text-center text-sm text-gray-600">
-          By logging in, you agree to our{' '}
-          <a href="#" className="text-blue-600 hover:underline">Terms</a> and{' '}
-          <a href="#" className="text-blue-600 hover:underline">Privacy Policy</a>
-        </p>
       </div>
     </div>
   );

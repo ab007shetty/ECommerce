@@ -120,11 +120,13 @@ export const CartProvider = ({ children }) => {
     setCouponCode(code);
   };
 
-  const clearCart = () => {
-    setCartItems([]);
-    setDiscount(0);
-    setCouponCode('');
-  };
+const clearCart = () => {
+  setCartItems([]);
+  setCouponCode(null);
+  setDiscount(0);
+  // Remove or comment out any toast.success here
+  // toast.success('Cart cleared');  // <-- Remove this line
+};
 
   return (
     <CartContext.Provider value={{

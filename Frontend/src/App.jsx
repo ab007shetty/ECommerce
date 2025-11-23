@@ -125,6 +125,9 @@ function App() {
           <AppRoutes />
           <Toaster
             position="top-right"
+            containerStyle={{
+              top: 80, // Position below navbar
+            }}
             toastOptions={{
               duration: 3000,
               style: {
@@ -134,8 +137,18 @@ function App() {
                 padding: '16px',
                 boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
               },
-              success: { iconTheme: { primary: '#10b981', secondary: '#fff' } },
-              error: { iconTheme: { primary: '#ef4444', secondary: '#fff' } },
+              success: { 
+                iconTheme: { 
+                  primary: '#10b981', 
+                  secondary: '#fff' 
+                } 
+              },
+              error: { 
+                iconTheme: { 
+                  primary: '#ef4444', 
+                  secondary: '#fff' 
+                } 
+              },
             }}
           />
         </CartProvider>

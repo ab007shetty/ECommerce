@@ -83,9 +83,9 @@ const ProductDetails = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 lg:items-start">
           {/* Product Image */}
-          <div className="space-y-4">
+          <div className="lg:sticky lg:top-8">
             <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 aspect-square">
               <img
                 src={product.image}
@@ -96,122 +96,124 @@ const ProductDetails = () => {
           </div>
 
           {/* Product Info */}
-          <div className="space-y-6">
-            <div>
-              <div className="flex items-center space-x-3 mb-3">
-                <span className="px-3 py-1 bg-blue-100 text-blue-700 text-sm font-semibold rounded-full">
+          <div className="space-y-4">
+            {/* Main Product Card */}
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+              {/* Category and Stock Status */}
+              <div className="flex items-center gap-2 mb-4">
+                <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-lg">
                   {product.category}
                 </span>
                 {product.stock > 0 ? (
-                  <span className="px-3 py-1 bg-green-100 text-green-700 text-sm font-semibold rounded-full">
-                    In Stock ({product.stock} available)
+                  <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-lg flex items-center">
+                    <span className="w-1.5 h-1.5 bg-green-500 rounded-full mr-1.5"></span>
+                    In Stock
                   </span>
                 ) : (
-                  <span className="px-3 py-1 bg-red-100 text-red-700 text-sm font-semibold rounded-full">
+                  <span className="px-3 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded-lg flex items-center">
+                    <span className="w-1.5 h-1.5 bg-red-500 rounded-full mr-1.5"></span>
                     Out of Stock
                   </span>
                 )}
               </div>
 
-              <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-2">
+              {/* Product Name */}
+              <h1 className="text-2xl font-bold text-gray-900 leading-tight mb-3">
                 {product.name}
               </h1>
-            </div>
 
-            {/* Price */}
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl border border-blue-100">
-              <div className="flex items-baseline space-x-3 mb-2">
-                <span className="text-4xl font-bold text-gray-900">
-                  ₹{product.price.toLocaleString()}
-                </span>
-              </div>
-              <p className="text-sm text-gray-600">Inclusive of all taxes</p>
-            </div>
-
-            {/* Description */}
-            <div className="bg-white p-6 rounded-xl border border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Product Description</h3>
-              <p className="text-gray-700 leading-relaxed">{product.description}</p>
-            </div>
-
-            {/* Quantity Selector */}
-            {product.stock > 0 && (
-              <div className="bg-white p-6 rounded-xl border border-gray-200">
-                <label className="block text-sm font-semibold text-gray-700 mb-3">
-                  Quantity
-                </label>
-                <div className="flex items-center space-x-4">
-                  <div className="flex items-center border-2 border-gray-300 rounded-lg">
-                    <button
-                      onClick={() => handleQuantityChange('decrement')}
-                      disabled={quantity <= 1}
-                      className="p-3 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    >
-                      <Minus className="w-5 h-5 text-gray-700" />
-                    </button>
-                    <span className="px-6 py-3 font-bold text-lg text-gray-900 border-x-2 border-gray-300">
-                      {quantity}
-                    </span>
-                    <button
-                      onClick={() => handleQuantityChange('increment')}
-                      disabled={quantity >= product.stock}
-                      className="p-3 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    >
-                      <Plus className="w-5 h-5 text-gray-700" />
-                    </button>
-                  </div>
-                  <span className="text-sm text-gray-600">
-                    {product.stock} units available
+              {/* Price Section */}
+              <div className="mb-4 pb-4 border-b border-gray-200">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl font-bold text-gray-900">
+                    ₹{product.price.toLocaleString()}
                   </span>
                 </div>
+                <p className="text-xs text-gray-500 mt-1">Inclusive of all taxes</p>
               </div>
-            )}
 
-            {/* Action Buttons */}
-            <div className="space-y-3">
-              <button
-                onClick={handleAddToCart}
-                disabled={product.stock === 0}
-                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:from-gray-300 disabled:to-gray-400 text-white py-4 rounded-xl font-bold text-lg transition-all transform active:scale-95 flex items-center justify-center space-x-3 shadow-lg disabled:cursor-not-allowed"
-              >
-                <ShoppingCart className="w-6 h-6" />
-                <span>{product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}</span>
-              </button>
-              <Link
-                to="/cart"
-                className="block w-full bg-white border-2 border-blue-600 text-blue-600 hover:bg-blue-50 py-4 rounded-xl font-bold text-lg transition-all text-center"
-              >
-                Go to Cart
-              </Link>
+              {/* Description */}
+              <div className="mb-4">
+                <h3 className="text-sm font-semibold text-gray-900 mb-2">About this product</h3>
+                <p className="text-gray-600 text-sm leading-relaxed">{product.description}</p>
+              </div>
+
+              {/* Quantity and Action Buttons */}
+              {product.stock > 0 ? (
+                <div className="space-y-3 pt-4 border-t border-gray-200">
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center border-2 border-gray-300 rounded-lg">
+                      <button
+                        onClick={() => handleQuantityChange('decrement')}
+                        disabled={quantity <= 1}
+                        className="p-2 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                      >
+                        <Minus className="w-4 h-4 text-gray-700" />
+                      </button>
+                      <span className="px-5 py-2 font-bold text-sm text-gray-900 border-x-2 border-gray-300 min-w-[50px] text-center">
+                        {quantity}
+                      </span>
+                      <button
+                        onClick={() => handleQuantityChange('increment')}
+                        disabled={quantity >= product.stock}
+                        className="p-2 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                      >
+                        <Plus className="w-4 h-4 text-gray-700" />
+                      </button>
+                    </div>
+                    
+                    <button
+                      onClick={handleAddToCart}
+                      className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-2.5 rounded-lg font-semibold text-sm transition-all transform active:scale-95 flex items-center justify-center gap-2 shadow-md"
+                    >
+                      <ShoppingCart className="w-4 h-4" />
+                      <span>Add to Cart</span>
+                    </button>
+                  </div>
+                  
+                  <Link
+                    to="/cart"
+                    className="block w-full text-center bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-sm py-2.5 rounded-lg transition-colors"
+                  >
+                    Go to Cart
+                  </Link>
+                </div>
+              ) : (
+                <div className="pt-4 border-t border-gray-200">
+                  <button
+                    disabled
+                    className="w-full bg-gray-200 text-gray-500 py-2.5 rounded-lg font-semibold text-sm cursor-not-allowed"
+                  >
+                    Out of Stock
+                  </button>
+                </div>
+              )}
             </div>
 
-            {/* Features */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="flex items-center space-x-3 p-4 bg-white rounded-xl border border-gray-200">
-                <div className="bg-blue-100 p-2 rounded-lg">
-                  <Truck className="w-6 h-6 text-blue-600" />
+            {/* Features Card */}
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-5">
+              <h3 className="text-sm font-semibold text-gray-900 mb-3">Why buy from us?</h3>
+              <div className="grid grid-cols-3 gap-4">
+                <div className="text-center">
+                  <div className="bg-blue-50 w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-2">
+                    <Truck className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <p className="font-semibold text-gray-800 text-xs mb-0.5">Free Delivery</p>
+                  <p className="text-[10px] text-gray-500">Above ₹999</p>
                 </div>
-                <div>
-                  <p className="font-semibold text-gray-800 text-sm">Free Delivery</p>
-                  <p className="text-xs text-gray-500">On orders above ₹999</p>
+                <div className="text-center">
+                  <div className="bg-green-50 w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-2">
+                    <RotateCcw className="w-5 h-5 text-green-600" />
+                  </div>
+                  <p className="font-semibold text-gray-800 text-xs mb-0.5">Easy Returns</p>
+                  <p className="text-[10px] text-gray-500">7 day policy</p>
                 </div>
-              </div>
-              <div className="flex items-center space-x-3 p-4 bg-white rounded-xl border border-gray-200">
-                <div className="bg-green-100 p-2 rounded-lg">
-                  <RotateCcw className="w-6 h-6 text-green-600" />
-                </div>
-                <div>
-                  <p className="font-semibold text-gray-800 text-sm">7 Day Return</p>
-                  <p className="text-xs text-gray-500">Easy returns policy</p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-3 p-4 bg-white rounded-xl border border-gray-200">
-                <div className="bg-purple-100 p-2 rounded-lg">
-                  <Shield className="w-6 h-6 text-purple-600" />
-                </div>
-                <div>
-                  <p className="font-semibold text-gray-800 text-sm">Secure Payment</p>
-                  <p className="text-xs text-gray-500">100% secure</p>
+                <div className="text-center">
+                  <div className="bg-purple-50 w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-2">
+                    <Shield className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <p className="font-semibold text-gray-800 text-xs mb-0.5">Secure Pay</p>
+                  <p className="text-[10px] text-gray-500">100% safe</p>
                 </div>
               </div>
             </div>

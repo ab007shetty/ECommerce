@@ -8,16 +8,24 @@ import {
   Phone,
   MapPin,
   ShoppingBag,
+  ArrowUp,
 } from 'lucide-react';
 
 const Footer = () => {
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  };
+
   return (
     <footer className="bg-gray-900 text-gray-300 mt-16">
       {/* Main Footer */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Brand & About */}
-          <div className="lg:col-span-1">
+          <div>
             <div className="flex items-center space-x-3 mb-4">
               <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white w-10 h-10 rounded-lg flex items-center justify-center">
                 <ShoppingBag className="w-6 h-6" />
@@ -40,59 +48,34 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* Quick Links - Hidden on mobile */}
-          <div className="hidden md:block">
-            <h3 className="text-white font-semibold text-lg mb-4">Quick Links</h3>
-            <ul className="space-y-2">
-              <li>
-                <Link to="/" className="text-gray-400 hover:text-white transition-colors text-sm">
-                  Home
-                </Link>
-              </li>
-              <li>
-                <Link to="/cart" className="text-gray-400 hover:text-white transition-colors text-sm">
-                  Cart
-                </Link>
-              </li>
-              <li>
-                <Link to="/orders" className="text-gray-400 hover:text-white transition-colors text-sm">
-                  Orders
-                </Link>
-              </li>
-              <li>
-                <Link to="/profile" className="text-gray-400 hover:text-white transition-colors text-sm">
-                  Profile
-                </Link>
-              </li>
-            </ul>
+          {/* Quick Links - Centered */}
+          <div className="md:flex md:justify-center">
+            <div>
+              <h3 className="text-white font-semibold text-lg mb-4">Quick Links</h3>
+              <ul className="space-y-2">
+                <li>
+                  <Link to="/" className="text-gray-400 hover:text-white transition-colors text-sm">
+                    Home
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/cart" className="text-gray-400 hover:text-white transition-colors text-sm">
+                    Cart
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/orders" className="text-gray-400 hover:text-white transition-colors text-sm">
+                    Orders
+                  </Link>
+                </li>
+              </ul>
+            </div>
           </div>
 
-          {/* Categories - Hidden on mobile */}
-          <div className="hidden md:block">
-            <h3 className="text-white font-semibold text-lg mb-4">Categories</h3>
-            <ul className="space-y-2">
-              <li>
-                <Link to="/?category=electronics" className="text-gray-400 hover:text-white transition-colors text-sm">
-                  Electronics
-                </Link>
-              </li>
-              <li>
-                <Link to="/?category=fashion" className="text-gray-400 hover:text-white transition-colors text-sm">
-                  Fashion
-                </Link>
-              </li>
-              <li>
-                <Link to="/?category=books" className="text-gray-400 hover:text-white transition-colors text-sm">
-                  Books
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Contact Info */}
-          <div>
+          {/* Contact Info - Moved Right */}
+          <div className="md:ml-auto md:max-w-xs">
             <h3 className="text-white font-semibold text-lg mb-4">Contact Us</h3>
-            <div className="space-y-3">
+            <div className="space-y-3 mb-6">
               <div className="flex items-center space-x-3 text-sm">
                 <Phone className="w-4 h-4 text-indigo-500 flex-shrink-0" />
                 <span className="text-gray-400">+91 98765 43210</span>
@@ -106,6 +89,16 @@ const Footer = () => {
                 <span className="text-gray-400">India</span>
               </div>
             </div>
+            {/* Scroll to Top Button - Right aligned */}
+            <div className="flex justify-end">
+              <button
+                onClick={scrollToTop}
+                className="bg-gray-800 hover:bg-indigo-600 p-2 rounded-lg transition-all group"
+                aria-label="Scroll to top"
+              >
+                <ArrowUp className="w-5 h-5 text-white group-hover:translate-y-[-2px] transition-transform" />
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -113,12 +106,19 @@ const Footer = () => {
       {/* Bottom Bar */}
       <div className="border-t border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex flex-col md:flex-row justify-between items-center space-y-2 md:space-y-0 text-sm text-gray-400">
+          <div className="flex flex-col md:flex-row justify-between items-center space-y-3 md:space-y-0 text-sm text-gray-400">
             <p>&copy; 2025 ECommerce. All rights reserved.</p>
-            <div className="flex space-x-6">
-              <Link to="/terms" className="hover:text-white transition-colors">Terms</Link>
-              <Link to="/privacy" className="hover:text-white transition-colors">Privacy</Link>
-            </div>
+            <p className="text-right">
+              Designed & Developed by{' '}
+              <a 
+                href="https://abshetty.in" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-indigo-400 hover:text-indigo-300 font-semibold transition-colors"
+              >
+                abshetty
+              </a>
+            </p>
           </div>
         </div>
       </div>
