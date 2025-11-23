@@ -22,7 +22,7 @@ const productSchema = new mongoose.Schema(
     category: {
       type: String,
       required: [true, "Category is required"],
-      enum: ["Electronics", "Fashion", "Books"], // only your 3 categories
+      // REMOVED enum restriction - now accepts any category
       trim: true,
     },
     image: {
@@ -40,7 +40,10 @@ const productSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Prevent overwrite if model already exists (fixes "Product is not a constructor")
+// Index for faster category queries
+productSchema.index({ category: 1 });
+
+// Prevent overwrite if model already exists
 const Product =
   mongoose.models.Product || mongoose.model("Product", productSchema);
 

@@ -1,18 +1,16 @@
 // Backend/controllers/couponController.js
 import Coupon from "../models/Coupon.js";
+import Product from "../models/Product.js"; // ADDED - Import Product model
 
-// Create a new coupon (Admin only)
+// Create Coupon
 export const createCoupon = async (req, res) => {
   try {
     const { code } = req.body;
-
-    // Check if coupon code already exists
-    const existingCoupon = await Coupon.findOne({ code: code.toUpperCase() });
-    if (existingCoupon) {
-      return res.status(400).json({
-        success: false,
-        message: "Coupon code already exists",
-      });
+    const existing = await Coupon.findOne({ code: code.toUpperCase() });
+    if (existing) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Coupon code already exists" });
     }
 
     const coupon = new Coupon({
@@ -27,56 +25,30 @@ export const createCoupon = async (req, res) => {
   }
 };
 
-// Get all coupons (Admin only)
+// Get All Coupons (Admin)
 export const getCoupons = async (req, res) => {
   try {
-    const coupons = await Coupon.find()
-      .populate("applicableProducts", "name price")
-      .sort({ createdAt: -1 });
+    const coupons = await Coupon.find().sort({ createdAt: -1 });
     res.json({ success: true, data: coupons });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// Get single coupon by ID
-export const getCouponById = async (req, res) => {
-  try {
-    const coupon = await Coupon.findById(req.params.id).populate(
-      "applicableProducts",
-      "name price category"
-    );
-
-    if (!coupon) {
-      return res.status(404).json({
-        success: false,
-        message: "Coupon not found",
-      });
-    }
-
-    res.json({ success: true, data: coupon });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-};
-
-// Update coupon (Admin only)
+// Update Coupon
 export const updateCoupon = async (req, res) => {
   try {
     const { code } = req.body;
 
-    // If code is being updated, check if new code already exists
     if (code) {
-      const existingCoupon = await Coupon.findOne({
+      const exists = await Coupon.findOne({
         code: code.toUpperCase(),
         _id: { $ne: req.params.id },
       });
-
-      if (existingCoupon) {
-        return res.status(400).json({
-          success: false,
-          message: "Coupon code already exists",
-        });
+      if (exists) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Coupon code already exists" });
       }
     }
 
@@ -87,10 +59,9 @@ export const updateCoupon = async (req, res) => {
     );
 
     if (!coupon) {
-      return res.status(404).json({
-        success: false,
-        message: "Coupon not found",
-      });
+      return res
+        .status(404)
+        .json({ success: false, message: "Coupon not found" });
     }
 
     res.json({ success: true, data: coupon });
@@ -99,75 +70,40 @@ export const updateCoupon = async (req, res) => {
   }
 };
 
-// Delete coupon (Admin only)
+// Delete Coupon
 export const deleteCoupon = async (req, res) => {
   try {
     const coupon = await Coupon.findByIdAndDelete(req.params.id);
-
     if (!coupon) {
-      return res.status(404).json({
-        success: false,
-        message: "Coupon not found",
-      });
+      return res
+        .status(404)
+        .json({ success: false, message: "Coupon not found" });
     }
-
     res.json({ success: true, message: "Coupon deleted successfully" });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// Validate and apply coupon (User)
+// Validate Coupon
 export const validateCoupon = async (req, res) => {
   const { code, cartTotal, cartItems } = req.body;
 
   try {
-    // Find coupon by code
-    const coupon = await Coupon.findOne({ code: code.toUpperCase() }).populate(
-      "applicableProducts",
-      "name price category"
-    );
-
+    const coupon = await Coupon.findOne({ code: code.toUpperCase() });
     if (!coupon) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid coupon code",
-      });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid coupon code" });
     }
 
-    // Check if coupon is active
-    if (!coupon.isActive) {
-      return res.status(400).json({
-        success: false,
-        message: "This coupon is currently inactive",
-      });
+    // Auto active check by date
+    if (!coupon.isActiveNow()) {
+      return res
+        .status(400)
+        .json({ success: false, message: "This coupon is not active" });
     }
 
-    // Check valid date range
-    const now = new Date();
-    if (now < coupon.validFrom) {
-      return res.status(400).json({
-        success: false,
-        message: `Coupon valid from ${coupon.validFrom.toLocaleDateString()}`,
-      });
-    }
-
-    if (now > coupon.validUntil) {
-      return res.status(400).json({
-        success: false,
-        message: "This coupon has expired",
-      });
-    }
-
-    // Check usage limit
-    if (coupon.usageLimit !== null && coupon.usedCount >= coupon.usageLimit) {
-      return res.status(400).json({
-        success: false,
-        message: "Coupon usage limit reached",
-      });
-    }
-
-    // Check minimum purchase amount
     if (cartTotal < coupon.minPurchaseAmount) {
       return res.status(400).json({
         success: false,
@@ -175,13 +111,32 @@ export const validateCoupon = async (req, res) => {
       });
     }
 
-    // Check category restrictions
+    // ──────────────── CATEGORY VALIDATION (FIXED) ────────────────
+    // If applicableCategories array has items, validate against cart
     if (coupon.applicableCategories && coupon.applicableCategories.length > 0) {
-      const hasApplicableCategory = cartItems.some((item) =>
-        coupon.applicableCategories.includes(item.product?.category)
+      // Extract product IDs from cart items
+      const productIds = cartItems.map((item) => {
+        // Handle both populated and unpopulated product references
+        if (typeof item.product === "object" && item.product._id) {
+          return item.product._id;
+        }
+        return item.product;
+      });
+
+      // Fetch actual products from database to get their categories
+      const products = await Product.find({
+        _id: { $in: productIds },
+      }).select("category");
+
+      // Extract categories from the fetched products
+      const cartCategories = products.map((p) => p.category).filter(Boolean); // Remove null/undefined categories
+
+      // Check if any cart category matches the coupon's applicable categories
+      const hasMatchingCategory = cartCategories.some((cartCat) =>
+        coupon.applicableCategories.includes(cartCat)
       );
 
-      if (!hasApplicableCategory) {
+      if (!hasMatchingCategory) {
         return res.status(400).json({
           success: false,
           message: `Coupon only applicable to: ${coupon.applicableCategories.join(
@@ -190,44 +145,24 @@ export const validateCoupon = async (req, res) => {
         });
       }
     }
-
-    // Check product restrictions
-    if (coupon.applicableProducts && coupon.applicableProducts.length > 0) {
-      const applicableProductIds = coupon.applicableProducts.map((p) =>
-        p._id.toString()
-      );
-      const hasApplicableProduct = cartItems.some((item) =>
-        applicableProductIds.includes(item.product?._id?.toString())
-      );
-
-      if (!hasApplicableProduct) {
-        return res.status(400).json({
-          success: false,
-          message: "Coupon not applicable to items in cart",
-        });
-      }
-    }
+    // If applicableCategories is empty → applies to ALL categories → allowed
 
     // Calculate discount
-    let discountAmount = 0;
+    let discountAmount =
+      coupon.discountType === "percentage"
+        ? (coupon.discountValue / 100) * cartTotal
+        : coupon.discountValue;
 
-    if (coupon.discountType === "percentage") {
-      discountAmount = (coupon.discountValue / 100) * cartTotal;
-    } else {
-      discountAmount = coupon.discountValue;
-    }
-
-    // Apply max discount limit
+    // Apply max discount cap if set
     if (coupon.maxDiscountAmount && discountAmount > coupon.maxDiscountAmount) {
       discountAmount = coupon.maxDiscountAmount;
     }
 
-    // Ensure discount doesn't exceed cart total
+    // Discount cannot exceed cart total
     if (discountAmount > cartTotal) {
       discountAmount = cartTotal;
     }
 
-    // Return success with discount details
     res.json({
       success: true,
       data: {
@@ -240,56 +175,21 @@ export const validateCoupon = async (req, res) => {
       },
     });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Server error while validating coupon",
-    });
+    console.error("Coupon validation error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
-// Increment coupon usage (called after successful order)
-export const incrementCouponUsage = async (req, res) => {
-  const { code } = req.body;
-
-  try {
-    const coupon = await Coupon.findOne({ code: code.toUpperCase() });
-
-    if (!coupon) {
-      return res.status(404).json({
-        success: false,
-        message: "Coupon not found",
-      });
-    }
-
-    coupon.usedCount += 1;
-    await coupon.save();
-
-    res.json({
-      success: true,
-      message: "Coupon usage updated",
-      data: coupon,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
-
-// Get active coupons for users (public or authenticated)
+// Get active public coupons (optional)
 export const getActiveCoupons = async (req, res) => {
   try {
     const now = new Date();
     const coupons = await Coupon.find({
-      isActive: true,
       validFrom: { $lte: now },
       validUntil: { $gte: now },
-      $or: [
-        { usageLimit: null },
-        { $expr: { $lt: ["$usedCount", "$usageLimit"] } },
-      ],
-    }).select("-applicableProducts -__v");
+    }).select(
+      "code description discountType discountValue minPurchaseAmount validUntil applicableCategories"
+    );
 
     res.json({ success: true, data: coupons });
   } catch (error) {

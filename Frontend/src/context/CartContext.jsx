@@ -1,6 +1,6 @@
 // Frontend/src/context/CartContext.jsx
-import { createContext, useContext, useState, useEffect } from 'react';
-import { cartAPI } from '../services/api';
+import { createContext, useContext, useState, useEffect, useRef } from 'react';
+import { cartAPI, couponAPI } from '../services/api';
 import toast from 'react-hot-toast';
 import { useAuth } from './AuthContext';
 
@@ -12,6 +12,9 @@ export const CartProvider = ({ children }) => {
   const [discount, setDiscount] = useState(0);
   const [couponCode, setCouponCode] = useState('');
   const [loading, setLoading] = useState(false);
+  
+  // Use ref to track if we're validating to prevent multiple simultaneous validations
+  const isValidatingRef = useRef(false);
 
   useEffect(() => {
     if (user) {
@@ -22,6 +25,64 @@ export const CartProvider = ({ children }) => {
       setCouponCode('');
     }
   }, [user]);
+
+  // Auto-validate coupon when cart items change
+  useEffect(() => {
+    const validateCurrentCoupon = async () => {
+      // Skip if no user, no coupon, already validating, or cart is empty
+      if (!user || !couponCode || isValidatingRef.current || cartItems.length === 0) {
+        // If cart is empty but coupon exists, remove it
+        if (couponCode && cartItems.length === 0) {
+          setDiscount(0);
+          setCouponCode('');
+          toast.error('Coupon removed - cart is empty', { icon: '⚠️' });
+        }
+        return;
+      }
+
+      isValidatingRef.current = true;
+
+      try {
+        // Re-validate the coupon with current cart
+        const response = await couponAPI.validate({
+          code: couponCode,
+          cartTotal: getCartTotal(),
+          cartItems: cartItems.map(item => ({
+            product: item.product?._id || item.product,
+            quantity: item.quantity,
+          })),
+        });
+
+        if (response.data.success) {
+          // Update discount in case cart total changed
+          const newDiscount = parseFloat(response.data.data.discountAmount);
+          if (newDiscount !== discount) {
+            setDiscount(newDiscount);
+          }
+        }
+      } catch (error) {
+        // Coupon is no longer valid, remove it
+        setDiscount(0);
+        setCouponCode('');
+        
+        // Show a toast notification with the reason
+        const message = error.response?.data?.message || 'Coupon removed due to cart changes';
+        toast.error(message, {
+          duration: 4000,
+          icon: '⚠️',
+        });
+      } finally {
+        isValidatingRef.current = false;
+      }
+    };
+
+    // Debounce validation to avoid too many API calls
+    const timeoutId = setTimeout(() => {
+      validateCurrentCoupon();
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [cartItems, couponCode, user]); // Re-run when cart, coupon, or user changes
 
   const fetchCart = async () => {
     if (!user) return;
@@ -120,13 +181,11 @@ export const CartProvider = ({ children }) => {
     setCouponCode(code);
   };
 
-const clearCart = () => {
-  setCartItems([]);
-  setCouponCode(null);
-  setDiscount(0);
-  // Remove or comment out any toast.success here
-  // toast.success('Cart cleared');  // <-- Remove this line
-};
+  const clearCart = () => {
+    setCartItems([]);
+    setCouponCode('');
+    setDiscount(0);
+  };
 
   return (
     <CartContext.Provider value={{

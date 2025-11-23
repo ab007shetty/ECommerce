@@ -3,19 +3,21 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Plus, Edit2, Trash2, ArrowLeft, X,
-  Smartphone, Shirt, BookOpen
+  Smartphone, Shirt, BookOpen, Package
 } from 'lucide-react';
 import { productAPI } from '../../services/api';
 import toast from 'react-hot-toast';
 
-const CATEGORIES = [
-  { value: 'Electronics', label: 'Electronics', icon: Smartphone },
-  { value: 'Fashion', label: 'Fashion', icon: Shirt },
-  { value: 'Books', label: 'Books', icon: BookOpen },
-];
+// Icon mapping for known categories
+const CATEGORY_ICONS = {
+  'Electronics': Smartphone,
+  'Fashion': Shirt,
+  'Books': BookOpen,
+};
 
 const ProductManagement = () => {
   const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -23,9 +25,11 @@ const ProductManagement = () => {
   const [editingProduct, setEditingProduct] = useState(null);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState({});
+  const [showCustomCategory, setShowCustomCategory] = useState(false);
+  const [customCategory, setCustomCategory] = useState('');
 
   const [formData, setFormData] = useState({
-    name: '', description: '', price: '', category: 'Electronics', image: '', stock: ''
+    name: '', description: '', price: '', category: '', image: '', stock: ''
   });
 
   useEffect(() => { fetchProducts(); }, []);
@@ -34,7 +38,17 @@ const ProductManagement = () => {
     try {
       setLoading(true);
       const { data } = await productAPI.getAll();
-      setProducts(data.data || []);
+      const productsData = data.data || [];
+      setProducts(productsData);
+      
+      // Extract unique categories from products
+      const uniqueCategories = [...new Set(productsData.map(p => p.category).filter(Boolean))].sort();
+      setCategories(uniqueCategories);
+      
+      // Set default category if categories exist
+      if (uniqueCategories.length > 0 && !formData.category) {
+        setFormData(prev => ({ ...prev, category: uniqueCategories[0] }));
+      }
     } catch (error) {
       toast.error('Failed to load products');
     } finally {
@@ -49,6 +63,14 @@ const ProductManagement = () => {
     if (!formData.price || formData.price <= 0) newErrors.price = 'Valid price required';
     if (!formData.image.trim()) newErrors.image = 'Image URL is required';
     if (formData.stock === '' || formData.stock < 0) newErrors.stock = 'Valid stock required';
+    
+    // Category validation
+    if (showCustomCategory) {
+      if (!customCategory.trim()) newErrors.category = 'Category name is required';
+    } else {
+      if (!formData.category) newErrors.category = 'Please select a category';
+    }
+    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -59,6 +81,26 @@ const ProductManagement = () => {
     if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
   };
 
+  const handleCategoryChange = (e) => {
+    const value = e.target.value;
+    if (value === '__custom__') {
+      setShowCustomCategory(true);
+      setCustomCategory('');
+      setFormData(prev => ({ ...prev, category: '' }));
+    } else {
+      setShowCustomCategory(false);
+      setCustomCategory('');
+      setFormData(prev => ({ ...prev, category: value }));
+    }
+    if (errors.category) setErrors(prev => ({ ...prev, category: '' }));
+  };
+
+  const handleCustomCategoryChange = (e) => {
+    const value = e.target.value;
+    setCustomCategory(value);
+    if (errors.category) setErrors(prev => ({ ...prev, category: '' }));
+  };
+
   const openModal = (product = null) => {
     if (product) {
       setEditingProduct(product);
@@ -66,13 +108,25 @@ const ProductManagement = () => {
         name: product.name || '',
         description: product.description || '',
         price: product.price || '',
-        category: product.category || 'Electronics',
+        category: product.category || '',
         image: product.image || '',
         stock: product.stock ?? ''
       });
+      setShowCustomCategory(false);
+      setCustomCategory('');
     } else {
       setEditingProduct(null);
-      setFormData({ name: '', description: '', price: '', category: 'Electronics', image: '', stock: '' });
+      const defaultCategory = categories.length > 0 ? categories[0] : '';
+      setFormData({ 
+        name: '', 
+        description: '', 
+        price: '', 
+        category: defaultCategory, 
+        image: '', 
+        stock: '' 
+      });
+      setShowCustomCategory(false);
+      setCustomCategory('');
     }
     setErrors({});
     setShowModal(true);
@@ -84,11 +138,14 @@ const ProductManagement = () => {
 
     setSaving(true);
     try {
+      // Use custom category if entered, otherwise use selected category
+      const finalCategory = showCustomCategory ? customCategory.trim() : formData.category;
+      
       const payload = {
         name: formData.name.trim(),
         description: formData.description.trim(),
         price: Number(formData.price),
-        category: formData.category,
+        category: finalCategory,
         image: formData.image.trim(),
         stock: Number(formData.stock)
       };
@@ -129,9 +186,8 @@ const ProductManagement = () => {
   };
 
   const getCategoryIcon = (category) => {
-    const cat = CATEGORIES.find(c => c.value === category);
-    const Icon = cat?.icon;
-    return Icon ? <Icon className="w-4 h-4" /> : null;
+    const Icon = CATEGORY_ICONS[category] || Package;
+    return <Icon className="w-4 h-4" />;
   };
 
   return (
@@ -238,7 +294,6 @@ const ProductManagement = () => {
                 <div key={p._id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                   <div className="p-4">
                     <div className="flex gap-4">
-                      {/* Full image visible - no cropping */}
                       <div className="w-28 h-28 bg-gray-50 border-2 border-solid border-gray-300 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
                         <img
                           src={p.image || '/placeholder.jpg'}
@@ -285,7 +340,7 @@ const ProductManagement = () => {
         )}
       </div>
 
-      {/* Add/Edit Modal - unchanged except image preview fix */}
+      {/* Add/Edit Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[95vh] overflow-y-auto">
@@ -333,12 +388,44 @@ const ProductManagement = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">Category *</label>
-                    <select name="category" value={formData.category} onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                      {CATEGORIES.map(cat => (
-                        <option key={cat.value} value={cat.value}>{cat.label}</option>
-                      ))}
-                    </select>
+                    {!showCustomCategory ? (
+                      <select 
+                        name="category" 
+                        value={formData.category} 
+                        onChange={handleCategoryChange}
+                        className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 ${errors.category ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-indigo-500'}`}
+                      >
+                        {categories.length === 0 && (
+                          <option value="">No categories yet</option>
+                        )}
+                        {categories.map(cat => (
+                          <option key={cat} value={cat}>{cat}</option>
+                        ))}
+                        <option value="__custom__">+ Add New Category</option>
+                      </select>
+                    ) : (
+                      <div className="space-y-2">
+                        <input 
+                          type="text" 
+                          value={customCategory}
+                          onChange={handleCustomCategoryChange}
+                          className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 ${errors.category ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-indigo-500'}`}
+                          placeholder="Enter new category"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowCustomCategory(false);
+                            setCustomCategory('');
+                            setFormData(prev => ({ ...prev, category: categories[0] || '' }));
+                          }}
+                          className="text-xs text-blue-600 hover:text-blue-700"
+                        >
+                          ← Back to existing categories
+                        </button>
+                      </div>
+                    )}
+                    {errors.category && <p className="mt-1 text-sm text-red-600">{errors.category}</p>}
                   </div>
                 </div>
 

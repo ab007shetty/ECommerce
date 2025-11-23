@@ -34,7 +34,7 @@ const useDebounce = (value, delay) => {
   return debouncedValue;
 };
 
-// Category icon mapping
+// Category icon mapping with default fallback
 const getCategoryIcon = (category) => {
   const iconMap = {
     'All': Grid3x3,
@@ -43,6 +43,7 @@ const getCategoryIcon = (category) => {
     'Fashion': Shirt,
   };
 
+  // Use the mapped icon or default to Package icon
   const IconComponent = iconMap[category] || Package;
   return <IconComponent className="w-4 h-4" />;
 };
@@ -116,8 +117,7 @@ const Home = () => {
     if (query) {
       const lowerQuery = query.toLowerCase();
       filtered = filtered.filter(p =>
-        p.name.toLowerCase().includes(lowerQuery) ||
-        p.description.toLowerCase().includes(lowerQuery)
+        p.name.toLowerCase().includes(lowerQuery)
       );
     }
 
@@ -365,17 +365,10 @@ const Home = () => {
 
                   {/* Product Name */}
                   <Link to={`/product/${product._id}`}>
-                    <h3 className="font-bold text-gray-900 mb-2 line-clamp-2 hover:text-blue-600 transition text-lg leading-tight min-h-[3.5rem]">
+                    <h3 className="font-bold text-gray-900 mb-3 line-clamp-2 hover:text-blue-600 transition text-lg leading-tight">
                       {product.name}
                     </h3>
                   </Link>
-
-                  {/* Description */}
-                  {product.description && (
-                    <p className="text-sm text-gray-600 line-clamp-2 mb-4 leading-relaxed">
-                      {product.description}
-                    </p>
-                  )}
 
                   {/* Price */}
                   <div className="mb-4">

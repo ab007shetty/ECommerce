@@ -25,7 +25,7 @@ const couponSchema = new mongoose.Schema(
     discountValue: {
       type: Number,
       required: true,
-      min: [0, "Discount value cannot be negative"],
+      min: [0.01, "Discount value must be positive"],
     },
     minPurchaseAmount: {
       type: Number,
@@ -45,57 +45,26 @@ const couponSchema = new mongoose.Schema(
       type: Date,
       required: true,
     },
-    usageLimit: {
-      type: Number,
-      default: null,
-      min: [1, "Usage limit must be at least 1"],
-    },
-    usedCount: {
-      type: Number,
-      default: 0,
-    },
-    isActive: {
-      type: Boolean,
-      default: true,
-    },
     applicableCategories: {
       type: [String],
       default: [],
-      enum: ["Electronics", "Fashion", "Books", ""],
-    },
-    applicableProducts: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Product",
-      },
-    ],
-    createdAt: {
-      type: Date,
-      default: Date.now,
     },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
-// Validation: validUntil must be after validFrom
+// Ensure validUntil > validFrom
 couponSchema.pre("save", function (next) {
   if (this.validUntil <= this.validFrom) {
-    next(new Error("Valid until date must be after valid from date"));
+    return next(new Error("Valid until date must be after valid from date"));
   }
   next();
 });
 
-// Method to check if coupon is currently valid
-couponSchema.methods.isCurrentlyValid = function () {
+// Auto-check if coupon is currently active based on dates
+couponSchema.methods.isActiveNow = function () {
   const now = new Date();
-  return (
-    this.isActive &&
-    now >= this.validFrom &&
-    now <= this.validUntil &&
-    (this.usageLimit === null || this.usedCount < this.usageLimit)
-  );
+  return now >= this.validFrom && now <= this.validUntil;
 };
 
 export default mongoose.model("Coupon", couponSchema);
