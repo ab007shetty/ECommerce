@@ -1,4 +1,5 @@
 // Backend/routes/cart.js
+// ============================================
 import express from "express";
 const router = express.Router();
 import {
@@ -9,9 +10,12 @@ import {
 } from "../controllers/cartController.js";
 import { protect } from "../middleware/auth.js";
 
-router.get("/", protect, getCart);
-router.post("/", protect, addToCart);
-router.put("/", protect, updateCartItem);
-router.delete("/:productId", protect, removeFromCart);
+// All routes require authentication
+router.use(protect);
+
+router.get("/", getCart);
+router.post("/", addToCart);
+router.put("/", updateCartItem);
+router.delete("/:productId", removeFromCart);
 
 export default router;
