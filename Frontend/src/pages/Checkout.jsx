@@ -210,7 +210,9 @@ const Checkout = () => {
                       className="w-20 h-20 object-contain rounded-lg bg-gray-50 flex-shrink-0" />
                     <div className="flex-1 min-w-0">
                       <h3 className="font-semibold text-gray-900 mb-1 line-clamp-2 leading-tight">{item.product.name}</h3>
-                      <p className="text-sm text-gray-500 mb-2">Quantity: {item.quantity}</p>
+                      <p className="text-sm text-gray-500 mb-2">
+                        {item.quantity} × ₹{item.product.price.toLocaleString()}
+                      </p>
                       <p className="text-lg font-bold text-gray-900">₹{(item.product.price * item.quantity).toLocaleString()}</p>
                     </div>
                   </div>
@@ -262,7 +264,7 @@ const Checkout = () => {
                     <Loader className="w-5 h-5 animate-spin" /> Processing...
                   </span>
                 ) : (
-                  `Place Order - ₹${totalAmount.toFixed(2)}`
+                  `Place Order  ₹${totalAmount.toFixed(2)}`
                 )}
               </button>
             </div>

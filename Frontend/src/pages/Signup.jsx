@@ -170,7 +170,7 @@ export const Signup = () => {
             Create Account
           </h2>
           <p className="text-gray-600">
-            Join ShopKart today!
+            Join E-Commerce today!
           </p>
         </div>
 
