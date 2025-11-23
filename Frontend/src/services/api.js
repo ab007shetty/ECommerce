@@ -55,13 +55,19 @@ export const productAPI = {
   delete: (id) => API.delete(`/products/${id}`),
 };
 
-// Coupon API
+// Coupon API - ENHANCED with all CRUD operations
 export const couponAPI = {
+  // Admin operations
   getAll: () => API.get("/coupons"),
+  getById: (id) => API.get(`/coupons/${id}`),
   create: (data) => API.post("/coupons", data),
   update: (id, data) => API.put(`/coupons/${id}`, data),
   delete: (id) => API.delete(`/coupons/${id}`),
+
+  // User operations
   validate: (data) => API.post("/coupons/validate", data),
+  incrementUsage: (code) => API.post("/coupons/increment-usage", { code }),
+  getActive: () => API.get("/coupons/active/list"),
 };
 
 // Order API
